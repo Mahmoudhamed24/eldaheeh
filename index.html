@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مكتبة الدحيح</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2E7D32;
+      --light-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --border-radius: 10px;
+      --transition: 0.3s;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--light-color);
+      margin: 0; padding: 0;
+      color: var(--text-color);
+      direction: rtl;
+    }
+    header {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 30px 0;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+      padding: 25px;
+      transition: transform var(--transition);
+    }
+    .card:hover { transform: translateY(-3px); }
+    h1 { font-weight: 700; font-size: 2.4rem; margin: 0; }
+    h2 { font-weight: 600; font-size: 1.6rem; margin: 0 0 15px; }
+    .sale-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      align-items: end;
+      gap: 20px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 400;
+    }
+    input, select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: border-color var(--transition);
+    }
+    input:focus, select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+    .btn {
+      padding: 12px 20px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .btn:hover {
+      background: #27632a;
+      transform: translateY(-2px);
+    }
+    #totalDisplay {
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding: 10px;
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+    .search-input {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: center;
+      background: var(--card-bg);
+      border: none;
+      font-size: 1rem;
+    }
+    th {
+      background: transparent;
+      color: var(--primary-color);
+      font-weight: 600;
+      position: relative;
+      cursor: pointer;
+    }
+    th .arrow {
+      margin-left: 5px;
+      font-size: 0.8em;
+    }
+    tr td:first-child {
+      text-align: start;
+    }
+    tr:hover td {
+      background: #f1f8e9;
+    }
+    #message {
+      color: #d32f2f;
+      font-weight: 500;
+      grid-column: span 2;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .sale-section { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>مكتبة الدحيح</h1>
+  </header>
+
+  <main>
+    <!-- قسم تنفيذ البيع -->
+    <section class="card sale-section">
+      <div><h2>تنفيذ البيع</h2></div>
+      <label>المنتج:
+        <select id="saleProduct">
+          <option value="">اختر منتجًا</option>
+        </select>
+      </label>
+      <label>الكمية:
+        <input id="saleQty" type="number" min="1" />
+      </label>
+      <div id="totalDisplay">الإجمالي: 0.00</div>
+      <button id="saleBtn" class="btn">تنفيذ البيع</button>
+      <div id="message"></div>
+    </section>
+
+    <!-- قسم عرض وتصفية المنتجات -->
+    <section class="card">
+      <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2>قائمة المنتجات</h2>
+        <nav style="text-align:center; margin-top:10px;">
+          <a href="reports.html" class="btn"
+             style="background:#fff; color:var(--primary-color); border:2px solid var(--primary-color);">
+            تقارير المبيعات
+          </a>
+        </nav>
+        <input id="searchBox" class="search-input" placeholder="ابحث عن منتج..." />
+      </div>
+      <table id="products-table">
+        <thead>
+          <tr>
+            <th data-key="0">المنتج <span class="arrow"></span></th>
+            <th data-key="1">السعر <span class="arrow"></span></th>
+            <th data-key="2">الكمية الموجودة <span class="arrow"></span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const SPREADSHEET_ID  = '12GRlUWqQ4p0Ecu7Sx16waKIfjWCy3L1-OVk-joU6EWI';
+    const API_KEY        = 'AIzaSyBvcUFJXOXRs_eaQophaVYGHrybAjaWcZg';
+    const RANGE          = 'منتجات!A4:C100';
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyj3ufufqs6iF8TtzrqTj1GqKnr1hLbxPWaDTjiRf9XWQIRROyP8evf2guJTSu-G8s/exec';
+
+    let products = [];
+
+    const saleProduct  = document.getElementById('saleProduct');
+    const saleQty      = document.getElementById('saleQty');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const saleBtn      = document.getElementById('saleBtn');
+    const message      = document.getElementById('message');
+    const searchBox    = document.getElementById('searchBox');
+    const tbody        = document.querySelector('#products-table tbody');
+
+    // جلب المنتجات من Google Sheets
+    async function fetchProducts() {
+      try {
+        const res  = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`
+        );
+        const data = await res.json();
+        const rows = data.values || [];
+        products = rows
+          .filter(r => r[0] && r[0].trim() !== '')
+          .map(r => ({
+            name:  r[0],
+            price: parseFloat(r[1]) || 0,
+            qty:   parseInt(r[2])   || 0
+          }));
+        populateSaleOptions();
+        renderTable(products);
+      } catch (err) {
+        console.error('خطأ في جلب المنتجات', err);
+      }
+    }
+
+    // تعبئة قائمة البيع
+    function populateSaleOptions() {
+      saleProduct.innerHTML = '<option value="">اختر منتجًا</option>';
+      products.forEach((p, i) => {
+        saleProduct.innerHTML +=
+          `<option value="${i}">${p.name} (متاح: ${p.qty})</option>`;
+      });
+    }
+
+    // عرض جدول المنتجات
+    function renderTable(list) {
+      tbody.innerHTML = '';
+      list.forEach(p => {
+        tbody.innerHTML +=
+          `<tr>
+            <td>${p.name}</td>
+            <td>${p.price.toFixed(2)}</td>
+            <td>${p.qty}</td>
+          </tr>`;
+      });
+    }
+
+    // تحديث الإجمالي ديناميكياً
+    function updateTotal() {
+      const idx = saleProduct.value;
+      const qty = parseInt(saleQty.value) || 0;
+      const price = idx !== '' ? products[idx].price : 0;
+      totalDisplay.textContent = `الإجمالي: ${(price * qty).toFixed(2)}`;
+    }
+    saleProduct.addEventListener('change', updateTotal);
+    saleQty.addEventListener('input', updateTotal);
+
+    // تنفيذ البيع عبر طلب GET
+    saleBtn.addEventListener('click', () => {
+      message.textContent = '';
+      message.style.color = '#d32f2f';
+
+      const idx     = saleProduct.value;
+      const soldQty = parseInt(saleQty.value);
+      if (idx === '' || !soldQty) {
+        message.textContent = 'اختر منتجًا وحدد كمية.';
+        return;
+      }
+      const p = products[idx];
+      if (soldQty > p.qty) {
+        message.textContent = 'الكمية المطلوبة أكبر من المتاح.';
+        return;
+      }
+
+      const date    = encodeURIComponent(new Date().toLocaleString('ar-EG'));
+      const product = encodeURIComponent(p.name);
+      const total   = encodeURIComponent((p.price * soldQty).toFixed(2));
+
+      const url = `${APP_SCRIPT_URL}` +
+        `?date=${date}` +
+        `&product=${product}` +
+        `&total=${total}` +
+        `&soldQty=${soldQty}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            // تحديث محلي وإعادة العرض
+            p.qty -= soldQty;
+            renderTable(products);
+            populateSaleOptions();
+            saleQty.value = '';
+            updateTotal();
+            message.style.color = 'green';
+            message.textContent = 'تم تسجيل البيع.';
+          } else {
+            message.textContent = 'فشل في تسجيل البيع.';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          message.textContent = 'خطأ في الاتصال بخدمة التسجيل.';
+        });
+    });
+
+    // فرز الأعمدة
+    document.querySelectorAll('th').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = ['name','price','qty'][th.dataset.key];
+        const asc = th.classList.toggle('asc');
+        document.querySelectorAll('.arrow').forEach(a => a.textContent = '');
+        th.querySelector('.arrow').textContent = asc ? '▲' : '▼';
+        products.sort((a,b) =>
+          asc ? (a[key] > b[key] ? 1 : -1)
+              : (a[key] < b[key] ? 1 : -1)
+        );
+        renderTable(products);
+      });
+    });
+
+    // بحث نصي
+    searchBox.addEventListener('input', () => {
+      const term = searchBox.value.trim().toLowerCase();
+      renderTable(products.filter(p => p.name.toLowerCase().includes(term)));
+    });
+
+    // بدء التحميل
+    fetchProducts();
+  </script>
+</body>
+</html>
