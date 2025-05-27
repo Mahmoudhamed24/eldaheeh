@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تقارير المبيعات - مكتبة الدحيح</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #2E7D32; /* Deep Green */
+      --secondary-color: #4CAF50; /* Lighter Green */
+      --accent-color: #FFC107; /* Amber for highlights */
+      --light-color: #f4f6f9; /* Light Grey Background */
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --text-light: #666666;
+      --border-color: #e0e0e0;
+      --border-radius: 8px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease-in-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--light-color);
+      color: var(--text-color);
+      direction: rtl;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1000px; /* Adjusted max-width for reports */
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: #fff;
+      padding: 25px 0;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin: 0;
+    }
+
+    nav {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+      padding: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: end;
+        margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: #fff;
+    }
+
+    input[type="date"]:focus,
+    select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+    }
+
+    .btn {
+      padding: 12px 25px;
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      margin-left: 10px; /* Spacing between buttons */
+      margin-top: 10px; /* Spacing for buttons in grid */
+    }
+
+    .btn:hover {
+      background-color: #1e5b21;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+        background-color: #fff;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: #e8f5e9;
+        border-color: #1e5b21;
+        color: #1e5b21;
+    }
+
+    .btn-accent {
+        background-color: var(--accent-color);
+        color: #333;
+    }
+    .btn-accent:hover {
+        background-color: #ffb300; /* Darker amber */
+    }
+
+    .button-group {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #reportResult table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      box-shadow: var(--shadow);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    #reportResult th, 
+    #reportResult td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    #reportResult th {
+      background-color: var(--secondary-color);
+      color: #fff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #reportResult tbody tr {
+        background-color: var(--card-bg);
+        transition: background-color 0.2s ease;
+    }
+
+    #reportResult tbody tr:nth-child(even) {
+        background-color: #f9fbf9;
+    }
+
+    #reportResult tbody tr:hover {
+      background-color: #e8f5e9;
+    }
+
+    #reportResult td:nth-child(2) { /* Product name */
+        text-align: right;
+    }
+
+    .report-summary {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    #message {
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      margin-top: 15px;
+      text-align: center;
+      display: none; /* Hide initially */
+    }
+
+    #message.info {
+        background-color: #e2f1ff; 
+        color: #0d6efd;
+        border: 1px solid #b6d4fe;
+        display: block;
+    }
+    #message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background-color: #fff;
+        padding: 0;
+        margin: 0;
+      }
+      header, nav, .card .filter-section, .card .button-group, #message {
+        display: none !important; /* Ensure they are hidden */
+      }
+      .container {
+        max-width: none;
+        padding: 0;
+        margin: 0;
+      }
+      .card {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+      }
+      #reportResult table {
+        border: 1px solid #000;
+        box-shadow: none;
+        border-radius: 0;
+        margin-top: 0;
+      }
+      #reportResult th, 
+      #reportResult td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        font-size: 10pt;
+        color: #000;
+      }
+      #reportResult th {
+        background-color: #eee !important; /* Simple background for print */
+        color: #000 !important;
+      }
+      #reportResult tbody tr:nth-child(even) {
+          background-color: #fff !important;
+      }
+      .report-summary {
+          border: 1px solid #ccc;
+          background-color: #f8f8f8 !important;
+          color: #000 !important;
+      }
+      a[href]:after { content: none !important; } /* Prevent URL display */
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        header h1 { font-size: 1.8rem; }
+        .filter-section { grid-template-columns: 1fr; }
+        .btn { width: 100%; margin-left: 0; }
+        .button-group { flex-direction: column; }
+        #reportResult th, #reportResult td { padding: 10px 8px; font-size: 0.9rem; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>تقارير المبيعات</h1>
+    </div>
+  </header>
+
+  <nav>
+      <div class="container">
+          <a href="index.html" class="btn btn-secondary">العودة إلى صفحة المنتجات</a>
+      </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <div class="filter-section">
+        <div>
+          <label for="startDate">من تاريخ:</label>
+          <input type="date" id="startDate" />
+        </div>
+        <div>
+          <label for="endDate">إلى تاريخ:</label>
+          <input type="date" id="endDate" />
+        </div>
+        <div>
+          <label for="productFilter">فلترة حسب المنتج (اختياري):</label>
+          <select id="productFilter">
+            <option value="">كل المنتجات</option>
+            <!-- Product options will be loaded here -->
+          </select>
+        </div>
+      </div>
+      <div class="button-group">
+          <button id="loadReport" class="btn">تحميل التقرير</button>
+          <button id="printReport" class="btn btn-secondary">طباعة التقرير</button>
+          <button id="exportExcel" class="btn btn-accent">تصدير إلى Excel</button>
+      </div>
+      <div id="message"></div>
+      <div id="reportResult">
+          <!-- Report table and summary will be displayed here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SS_ID = '12GRlUWqQ4p0Ecu7Sx16waKIfjWCy3L1-OVk-joU6EWI';
+    // Use the same Apps Script URL as the main page
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby54ZyJ4Dzz-T4dgySR4HVvyzax0SCprBfZGYfYFRjz-Rrr7cpUux42rcbaVzKQbFin/exec';
+
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const productFilterSelect = document.getElementById('productFilter');
+    const loadReportBtn = document.getElementById('loadReport');
+    const printReportBtn = document.getElementById('printReport');
+    const exportExcelBtn = document.getElementById('exportExcel');
+    const reportResultDiv = document.getElementById('reportResult');
+    const messageDiv = document.getElementById('message');
+
+    let allSalesData = []; // To store all sales data fetched initially
+    let allProducts = []; // To store product names for filtering
+
+    // Function to display messages
+    function showMessage(text, type = 'error') {
+        messageDiv.textContent = text;
+        messageDiv.className = type;
+        // Hide after 5 seconds
+        setTimeout(() => {
+            messageDiv.className = '';
+            messageDiv.textContent = '';
+        }, 5000);
+    }
+
+    // Function to parse dates from various formats potentially coming from Sheets
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        // Attempt to handle Arabic locale string first (e.g., "٢٧/‏٥/‏٢٠٢٥، ٨:١٥:٣٠ م")
+        try {
+            const westernDigits = String(dateStr).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            const cleaned = westernDigits.replace(/،/g, ',').replace(/[‏ممساءًصباحًا]/g, '').trim();
+            // Basic check for DD/MM/YYYY format (might need refinement)
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(cleaned)) {
+                const parts = cleaned.split(/[/, ]/);
+                // Assuming DD/MM/YYYY format
+                const date = new Date(parts[2], parts[1] - 1, parts[0]);
+                if (!isNaN(date)) return date;
+            }
+        } catch (e) { /* Ignore parsing error, try next method */ }
+
+        // Try standard Date constructor (handles ISO 8601 and other formats)
+        const date = new Date(dateStr);
+        return isNaN(date) ? null : date;
+    }
+
+    // Fetch initial data (both sales and products for the filter)
+    async function fetchInitialData() {
+        showMessage('جاري تحميل البيانات الأولية...', 'info');
+        try {
+            // Fetch Sales Data
+            const salesRes = await fetch(`${APP_SCRIPT_URL}?action=getSales`);
+            const salesResult = await salesRes.json();
+            if (salesResult.success) {
+                allSalesData = salesResult.data.map(sale => ({...sale, dateObj: parseDate(sale.date) }));
+            } else {
+                throw new Error(`فشل تحميل المبيعات: ${salesResult.error || 'خطأ غير معروف'}`);
+            }
+
+            // Fetch Products Data (only names needed for filter)
+            const productsRes = await fetch(`${APP_SCRIPT_URL}?action=getProducts`);
+            const productsResult = await productsRes.json();
+            if (productsResult.success) {
+                allProducts = productsResult.data;
+                populateProductFilter(allProducts);
+            } else {
+                // Non-critical error, filtering by product might not work
+                console.warn(`فشل تحميل المنتجات للفلتر: ${productsResult.error || 'خطأ غير معروف'}`);
+                populateProductFilter([]); // Populate with empty list
+            }
+
+            showMessage('تم تحميل البيانات الأولية.', 'info'); // Use info or hide
+            // Optionally display all sales initially or prompt user to select filters
+            displayReport([]); // Display empty table initially
+
+        } catch (error) {
+            console.error('Error fetching initial data:', error);
+            showMessage(`خطأ في تحميل البيانات الأولية: ${error.message}`, 'error');
+            displayReport([]); // Display empty table on error
+        }
+    }
+
+    // Populate product filter dropdown
+    function populateProductFilter(products) {
+        // Keep the "All Products" option
+        productFilterSelect.innerHTML = '<option value="">كل المنتجات</option>';
+        // Get unique product names from the product list
+        const uniqueProductNames = [...new Set(products.map(p => p.name.trim()))].sort();
+        uniqueProductNames.forEach(name => {
+            if (name) { // Ensure name is not empty
+                productFilterSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            }
+        });
+    }
+
+    // Filter and display the report
+    function displayReport(sales) {
+        reportResultDiv.innerHTML = ''; // Clear previous results
+        if (sales.length === 0) {
+            reportResultDiv.innerHTML = '<p style="text-align:center; padding: 20px;">لا توجد بيانات مبيعات تطابق معايير البحث.</p>';
+            return;
+        }
+
+        let tableHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>المنتج</th>
+                        <th>الكمية المباعة</th>
+                        <th>الإجمالي (د.ل)</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        let totalSalesValue = 0;
+        let totalQuantitySold = 0;
+
+        sales.forEach(sale => {
+            const displayDate = sale.dateObj ? sale.dateObj.toLocaleDateString('ar-EG') : sale.date; // Show formatted date if possible
+            tableHTML += `
+                <tr>
+                    <td>${displayDate || 'غير متوفر'}</td>
+                    <td>${sale.product}</td>
+                    <td>${sale.soldQty}</td>
+                    <td>${sale.total.toFixed(2)}</td>
+                </tr>
+            `;
+            totalSalesValue += sale.total;
+            totalQuantitySold += sale.soldQty;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+
+        // Add Summary
+        const summaryHTML = `
+            <div class="report-summary">
+                إجمالي المبيعات للفترة المحددة: ${totalSalesValue.toFixed(2)} د.ل <br>
+                إجمالي الكمية المباعة: ${totalQuantitySold} قطعة
+            </div>
+        `;
+
+        reportResultDiv.innerHTML = tableHTML + summaryHTML;
+    }
+
+    // Event Listener for Load Report Button
+    loadReportBtn.addEventListener('click', () => {
+        const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+        const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+        const selectedProduct = productFilterSelect.value;
+
+        // Adjust end date to include the whole day
+        if (endDate) {
+            endDate.setHours(23, 59, 59, 999);
+        }
+         // Adjust start date to beginning of the day
+        if (startDate) {
+            startDate.setHours(0, 0, 0, 0);
+        }
+
+        const filteredSales = allSalesData.filter(sale => {
+            const saleDate = sale.dateObj;
+            if (!saleDate) return false; // Skip sales with unparseable dates
+
+            const dateMatch = (!startDate || saleDate >= startDate) && (!endDate || saleDate <= endDate);
+            const productMatch = !selectedProduct || sale.product === selectedProduct;
+
+            return dateMatch && productMatch;
+        });
+
+        // Sort filtered sales by date (newest first)
+        filteredSales.sort((a, b) => (b.dateObj || 0) - (a.dateObj || 0));
+
+        displayReport(filteredSales);
+    });
+
+    // Event Listener for Print Button
+    printReportBtn.addEventListener('click', () => {
+        window.print();
+    });
+
+    // Event Listener for Export to Excel Button
+    exportExcelBtn.addEventListener('click', () => {
+        const table = reportResultDiv.querySelector('table');
+        if (!table) {
+            showMessage('لا يوجد تقرير لتصديره.', 'error');
+            return;
+        }
+
+        // Use SheetJS (xlsx) library to export table to Excel
+        try {
+            const wb = XLSX.utils.table_to_book(table, { sheet: "تقرير المبيعات" });
+            // Generate filename with date range if possible
+            const start = startDateInput.value || 'بداية';
+            const end = endDateInput.value || 'نهاية';
+            const filename = `تقرير_مبيعات_${start}_الى_${end}.xlsx`;
+            XLSX.writeFile(wb, filename);
+            showMessage('تم تصدير التقرير بنجاح.', 'info');
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            showMessage('حدث خطأ أثناء تصدير التقرير.', 'error');
+        }
+    });
+
+    // --- Initial Load --- 
+    // Set default dates (e.g., start of month to today)
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    startDateInput.valueAsDate = firstDayOfMonth;
+    endDateInput.valueAsDate = today;
+
+    // Fetch data when the page loads
+    fetchInitialData();
+
+  </script>
+</body>
+</html>
